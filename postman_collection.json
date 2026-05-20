@@ -1,0 +1,146 @@
+{
+  "info": {
+    "_postman_id": "wa-ai-assessment-collection",
+    "name": "WhatsApp AI Assessment Platform",
+    "description": "REST API endpoints for the WhatsApp AI Assessment Platform",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "conversationId",
+      "value": "",
+      "type": "string",
+      "description": "Set this after calling POST /send-message"
+    }
+  ],
+  "item": [
+    {
+      "name": "Send Message",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "const json = pm.response.json();",
+              "if (json.conversationId) {",
+              "  pm.collectionVariables.set('conversationId', json.conversationId);",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"phone\": \"919999999999\",\n  \"message\": \"Hello, I have a question about my order\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/send-message",
+          "host": ["{{baseUrl}}"],
+          "path": ["send-message"]
+        },
+        "description": "Queue an outgoing WhatsApp message to a phone number. The message is delivered via Baileys and saved to the database."
+      },
+      "response": [
+        {
+          "name": "Success",
+          "originalRequest": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"919999999999\",\n  \"message\": \"Hello, I have a question about my order\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/send-message",
+              "host": ["{{baseUrl}}"],
+              "path": ["send-message"]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [{ "key": "Content-Type", "value": "application/json" }],
+          "body": "{\n  \"status\": \"queued\",\n  \"conversationId\": \"550e8400-e29b-41d4-a716-446655440000\"\n}"
+        }
+      ]
+    },
+    {
+      "name": "Get All Conversations",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/conversations",
+          "host": ["{{baseUrl}}"],
+          "path": ["conversations"]
+        },
+        "description": "Retrieve all conversations ordered by creation date descending."
+      },
+      "response": [
+        {
+          "name": "Success",
+          "originalRequest": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/conversations",
+              "host": ["{{baseUrl}}"],
+              "path": ["conversations"]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [{ "key": "Content-Type", "value": "application/json" }],
+          "body": "[\n  {\n    \"id\": \"550e8400-e29b-41d4-a716-446655440000\",\n    \"phone\": \"919999999999\",\n    \"threadId\": \"thread_919999999999\",\n    \"createdAt\": \"2024-01-01T00:00:00.000Z\"\n  }\n]"
+        }
+      ]
+    },
+    {
+      "name": "Get Messages by Conversation",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/messages/{{conversationId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["messages", "{{conversationId}}"]
+        },
+        "description": "Retrieve all messages for a specific conversation, ordered by creation date ascending."
+      },
+      "response": [
+        {
+          "name": "Success",
+          "originalRequest": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/messages/550e8400-e29b-41d4-a716-446655440000",
+              "host": ["{{baseUrl}}"],
+              "path": ["messages", "550e8400-e29b-41d4-a716-446655440000"]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [{ "key": "Content-Type", "value": "application/json" }],
+          "body": "[\n  {\n    \"id\": \"msg-uuid-1\",\n    \"conversationId\": \"550e8400-e29b-41d4-a716-446655440000\",\n    \"sender\": \"user\",\n    \"message\": \"Hello, I have a question about my order\",\n    \"aiOutput\": null,\n    \"createdAt\": \"2024-01-01T00:00:01.000Z\"\n  },\n  {\n    \"id\": \"msg-uuid-2\",\n    \"conversationId\": \"550e8400-e29b-41d4-a716-446655440000\",\n    \"sender\": \"ai\",\n    \"message\": \"Hi! I'd be happy to help with your order question. Could you please share your order number?\",\n    \"aiOutput\": {\n      \"classification\": \"query\",\n      \"sentiment\": \"neutral\",\n      \"raw\": \"{\\\"reply\\\": \\\"Hi! ...\\\", \\\"classification\\\": \\\"query\\\", \\\"sentiment\\\": \\\"neutral\\\"}\"\n    },\n    \"createdAt\": \"2024-01-01T00:00:02.000Z\"\n  }\n]"
+        }
+      ]
+    }
+  ]
+}
