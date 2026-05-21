@@ -16,14 +16,14 @@ interface ParsedGrokJson {
 @Injectable()
 export class GrokService {
   private readonly logger = new Logger(GrokService.name);
-  private readonly apiUrl = 'https://api.x.ai/v1/chat/completions';
-  private readonly model = 'grok-beta';
+  private readonly apiUrl = 'https://api.groq.com/openai/v1/chat/completions';
+  private readonly model = 'llama-3.3-70b-versatile';
   private readonly apiKey: string;
 
   constructor(private readonly configService: ConfigService) {
-    const key = this.configService.get<string>('GROK_API_KEY');
+    const key = this.configService.get<string>('GROQ_API_KEY');
     if (!key) {
-      throw new Error('GROK_API_KEY is not set. Add it to your .env file.');
+      throw new Error('GROQ_API_KEY is not set. Add it to your .env file.');
     }
     this.apiKey = key;
   }

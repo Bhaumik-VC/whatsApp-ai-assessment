@@ -49,7 +49,7 @@ export class WhatsAppService implements OnModuleInit {
         version,
         auth: {
           creds: state.creds,
-          keys: makeCacheableSignalKeyStore(state.keys, { level: 'silent' } as any),
+          keys: makeCacheableSignalKeyStore(state.keys, baileysLogger),
         },
         printQRInTerminal: false,
         logger: baileysLogger,
@@ -105,11 +105,17 @@ export class WhatsAppService implements OnModuleInit {
       const jid = msg.key.remoteJid;
       if (!jid || jid.endsWith('@g.us')) return; // skip group chats
 
+      // @lid JIDs are WhatsApp internal Linked IDs — real phone number is in senderPn
+      // senderPn exists at runtime but is missing from Baileys' IMessageKey type definition
+      const resolvedJid = jid.endsWith('@lid')
+        ? ((msg.key as any).senderPn ?? jid)
+        : jid;
+
       // Baileys stores text in different fields depending on message type
       const text = msg.message?.conversation ?? msg.message?.extendedTextMessage?.text ?? null;
       if (!text?.trim()) return;
 
-      const job: IncomingMessageJob = { phone: phoneFromJid(jid), text: text.trim() };
+      const job: IncomingMessageJob = { phone: phoneFromJid(resolvedJid), text: text.trim() };
 
       await this.messageQueue.add('process-incoming', job, {
         attempts: 3,
